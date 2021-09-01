@@ -11,8 +11,10 @@ defmodule Pleroma.Web.Endpoint do
 
   socket("/socket", Pleroma.Web.UserSocket)
 
-  # TODO: Protect the metrics with Basic auth
-  plug(PromEx.Plug, prom_ex_module: Pleroma.PromEx)
+  plug(Unplug,
+    if: Pleroma.Web.Plugs.MetricsPredicate,
+    do: {PromEx.Plug, prom_ex_module: Pleroma.PromEx}
+  )
 
   plug(Plug.Telemetry, event_prefix: [:phoenix, :endpoint])
 
