@@ -121,9 +121,9 @@ defmodule Pleroma.Mixfile do
       {:phoenix_pubsub, "~> 2.0"},
       {:phoenix_ecto, "~> 4.0"},
       {:ecto_enum, "~> 1.4"},
-      {:ecto_sql, "~> 3.6.2"},
+      {:ecto_sql, "~> 3.7.0"},
       {:postgrex, ">= 0.15.5"},
-      {:oban, "~> 2.3.4"},
+      {:oban, "~> 2.4.0"},
       {:gettext, "~> 0.18"},
       {:bcrypt_elixir, "~> 2.2"},
       {:trailing_format_plug, "~> 0.0.7"},
@@ -197,6 +197,9 @@ defmodule Pleroma.Mixfile do
        ref: "289cda1b6d0d70ccb2ba508a2b0bd24638db2880"},
       {:eblurhash, "~> 1.1.0"},
       {:open_api_spex, "~> 3.10"},
+      {:nimble_pool, "~> 0.2.0", override: true},
+      {:prom_ex, "~> 1.4"},
+      {:sentry, "8.0.5"},
 
       # indirect dependency version override
       {:plug, "~> 1.10.4", override: true},

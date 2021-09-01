@@ -20,6 +20,13 @@ config :pleroma, Pleroma.Web.Endpoint,
 
 config :pleroma, Pleroma.Emails.Mailer, adapter: Swoosh.Adapters.Local
 
+config :pleroma, Pleroma.PromEx,
+  disabled: false,
+  manual_metrics_start_delay: :no_delay,
+  drop_metrics_groups: [],
+  grafana: :disabled,
+  metrics_server: :disabled
+
 # ## SSL Support
 #
 # In order to use HTTPS in development, a self-signed
