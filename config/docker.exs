@@ -20,6 +20,20 @@ config :pleroma, Pleroma.Repo,
   hostname: System.get_env("DB_HOST", "db"),
   pool_size: 10
 
+# PromEx set up
+config :pleroma, Pleroma.Web.Plugs.MetricsPredicate,
+  auth_token: System.fetch_env!("PROMETHEUS_AUTH_TOKEN")
+
+config :pleroma, Pleroma.PromEx,
+  prometheus_data_source_id: System.fetch_env!("PROMETHEUS_DATASOURCE_ID"),
+  grafana: [
+    host: System.fetch_env!("GRAFANA_HOST"),
+    auth_token: System.fetch_env!("GRAFANA_AUTH_TOKEN"),
+    upload_dashboards_on_start: true,
+    folder_name: "Pleroma - PromEx",
+    annotate_app_lifecycle: true
+  ]
+
 # Configure web push notifications
 config :web_push_encryption, :vapid_details, subject: "mailto:#{System.get_env("NOTIFY_EMAIL")}"
 
