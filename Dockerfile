@@ -1,4 +1,4 @@
-FROM elixir:1.9-alpine as build
+FROM hexpm/elixir:1.12.2-erlang-24.0.5-alpine-3.14.0 as build
 
 COPY . .
 
@@ -12,21 +12,21 @@ RUN apk add git gcc g++ musl-dev make cmake file-dev &&\
 	mkdir release &&\
 	mix release --path release
 
-FROM alpine:3.11
+FROM alpine:3.14.0
 
 ARG BUILD_DATE
 ARG VCS_REF
 
 LABEL maintainer="ops@pleroma.social" \
-    org.opencontainers.image.title="pleroma" \
-    org.opencontainers.image.description="Pleroma for Docker" \
-    org.opencontainers.image.authors="ops@pleroma.social" \
-    org.opencontainers.image.vendor="pleroma.social" \
-    org.opencontainers.image.documentation="https://git.pleroma.social/pleroma/pleroma" \
-    org.opencontainers.image.licenses="AGPL-3.0" \
-    org.opencontainers.image.url="https://pleroma.social" \
-    org.opencontainers.image.revision=$VCS_REF \
-    org.opencontainers.image.created=$BUILD_DATE
+	org.opencontainers.image.title="pleroma" \
+	org.opencontainers.image.description="Pleroma for Docker" \
+	org.opencontainers.image.authors="ops@pleroma.social" \
+	org.opencontainers.image.vendor="pleroma.social" \
+	org.opencontainers.image.documentation="https://git.pleroma.social/pleroma/pleroma" \
+	org.opencontainers.image.licenses="AGPL-3.0" \
+	org.opencontainers.image.url="https://pleroma.social" \
+	org.opencontainers.image.revision=$VCS_REF \
+	org.opencontainers.image.created=$BUILD_DATE
 
 ARG HOME=/opt/pleroma
 ARG DATA=/var/lib/pleroma
