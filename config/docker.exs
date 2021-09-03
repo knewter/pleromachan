@@ -1,8 +1,9 @@
 import Config
+port = String.to_integer(System.get_env("PORT") || "4000")
 
 config :pleroma, Pleroma.Web.Endpoint,
   url: [host: System.get_env("DOMAIN", "localhost"), scheme: "https", port: 443],
-  http: [ip: {0, 0, 0, 0}, port: 4000]
+  http: [ip: {0, 0, 0, 0}, port: port]
 
 config :pleroma, :instance,
   name: System.get_env("INSTANCE_NAME", "Pleroma"),
@@ -18,21 +19,9 @@ config :pleroma, Pleroma.Repo,
   password: System.fetch_env!("DB_PASS"),
   database: System.get_env("DB_NAME", "pleroma"),
   hostname: System.get_env("DB_HOST", "db"),
-  pool_size: 10
+  pool_size: System.get_env("DB_POOL_SIZE", "10") |> String.to_integer()
 
-# PromEx set up
-config :pleroma, Pleroma.Web.Plugs.MetricsPredicate,
-  auth_token: System.fetch_env!("PROMETHEUS_AUTH_TOKEN")
-
-config :pleroma, Pleroma.PromEx,
-  prometheus_data_source_id: System.fetch_env!("PROMETHEUS_DATASOURCE_ID"),
-  grafana: [
-    host: System.fetch_env!("GRAFANA_HOST"),
-    auth_token: System.fetch_env!("GRAFANA_AUTH_TOKEN"),
-    upload_dashboards_on_start: true,
-    folder_name: "Pleroma - PromEx",
-    annotate_app_lifecycle: true
-  ]
+config :pleroma, :dangerzone, override_repo_pool_size: true
 
 # Configure web push notifications
 config :web_push_encryption, :vapid_details, subject: "mailto:#{System.get_env("NOTIFY_EMAIL")}"
