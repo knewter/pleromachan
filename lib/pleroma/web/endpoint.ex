@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-only
 
 defmodule Pleroma.Web.Endpoint do
+  use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :pleroma
 
   require Pleroma.Constants
