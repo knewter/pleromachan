@@ -71,7 +71,8 @@ defmodule Pleroma.PromEx do
   @impl true
   def dashboard_assigns do
     [
-      datasource_id: "prometheus"
+      datasource_id: "prometheus",
+      default_selected_interval: "1m"
     ]
   end
 
