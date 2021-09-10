@@ -8,6 +8,8 @@ import Config
 # with brunch.io to recompile .js and .css sources.
 config :pleroma, Pleroma.Web.Endpoint,
   http: [
+    compress: true,
+    ip: {0, 0, 0, 0},
     port: 4000,
     protocol_options: [max_request_line_length: 8192, max_header_value_length: 8192]
   ],
@@ -17,6 +19,23 @@ config :pleroma, Pleroma.Web.Endpoint,
   check_origin: false,
   watchers: [],
   secure_cookie_flag: false
+
+config :pleroma, configurable_from_database: true
+
+no_limit = {1, 100_000}
+
+config :pleroma, :rate_limit,
+  authentication: no_limit,
+  timeline: no_limit,
+  search: no_limit,
+  app_account_creation: no_limit,
+  relations_actions: no_limit,
+  relation_id_action: no_limit,
+  statuses_actions: no_limit,
+  status_id_action: no_limit,
+  password_reset: no_limit,
+  account_confirmation_resend: no_limit,
+  ap_routes: no_limit
 
 config :pleroma, Pleroma.Emails.Mailer, adapter: Swoosh.Adapters.Local
 
@@ -57,7 +76,9 @@ config :pleroma, Pleroma.Repo,
   password: "postgres",
   database: "pleroma_dev",
   hostname: "localhost",
-  pool_size: 10
+  pool_size: 100
+
+config :pleroma, :dangerzone, override_repo_pool_size: true
 
 config :pleroma, Pleroma.Web.ApiSpec.CastAndValidate, strict: true
 
