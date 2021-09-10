@@ -34,13 +34,21 @@ defmodule Pleroma.Mixfile do
         output: "priv/static/doc"
       ],
       releases: [
-        pleroma: [
-          include_executables_for: [:unix],
-          applications: [ex_syslogger: :load, syslog: :load, eldap: :transient],
-          steps: [:assemble, &put_otp_version/1, &copy_files/1, &copy_nginx_config/1],
-          config_providers: [{Pleroma.Config.ReleaseRuntimeProvider, []}]
-        ]
+        pleroma: release()
       ]
+    ]
+  end
+
+  defp release do
+    steps = if(System.get_env("RELEASE_TAR") == "1", do: [:tar], else: [])
+
+    [
+      include_executables_for: [:unix],
+      applications: [ex_syslogger: :load, syslog: :load, eldap: :transient],
+      steps:
+        [:assemble, &put_otp_version/1, &copy_files/1, &copy_nginx_config/1]
+        |> Enum.concat(steps),
+      config_providers: [{Pleroma.Config.ReleaseRuntimeProvider, []}]
     ]
   end
 
