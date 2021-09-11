@@ -210,7 +210,7 @@ defmodule Pleroma.Mixfile do
       {:eblurhash, "~> 1.1.0"},
       {:open_api_spex, "~> 3.10"},
       {:nimble_pool, "~> 0.2.0", override: true},
-      {:prom_ex, "~> 1.4"},
+      {:prom_ex, "~> 1.4.1"},
       {:unplug, "~> 0.2.1"},
       {:sentry, "8.0.5"},
 
