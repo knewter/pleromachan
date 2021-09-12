@@ -566,7 +566,10 @@ config :pleroma, Oban,
     new_users_digest: 1,
     mute_expire: 5
   ],
-  plugins: [Oban.Plugins.Pruner],
+  plugins: [
+    Oban.Plugins.Pruner,
+    Pleroma.ObanSentryReporter
+  ],
   crontab: [
     {"0 0 * * 0", Pleroma.Workers.Cron.DigestEmailsWorker},
     {"0 0 * * *", Pleroma.Workers.Cron.NewUsersDigestWorker}
