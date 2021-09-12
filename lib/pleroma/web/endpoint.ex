@@ -5,6 +5,7 @@
 defmodule Pleroma.Web.Endpoint do
   use Sentry.PlugCapture
   use Phoenix.Endpoint, otp_app: :pleroma
+  use Appsignal.Phoenix
 
   require Pleroma.Constants
 
