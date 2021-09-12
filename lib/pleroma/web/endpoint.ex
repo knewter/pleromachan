@@ -120,6 +120,8 @@ defmodule Pleroma.Web.Endpoint do
   plug(Plug.MethodOverride)
   plug(Plug.Head)
 
+  plug(Sentry.PlugContext)
+
   secure_cookies = Config.get([__MODULE__, :secure_cookie_flag])
 
   cookie_name =
