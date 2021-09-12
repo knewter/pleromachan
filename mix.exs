@@ -212,6 +212,7 @@ defmodule Pleroma.Mixfile do
       {:nimble_pool, "~> 0.2.0", override: true},
       {:prom_ex, "~> 1.4.1"},
       {:unplug, "~> 0.2.1"},
+      {:sentry, "8.0.5"},
       {:appsignal, "~> 2.0"},
       {:appsignal_phoenix, "~> 2.0.0"},
 
