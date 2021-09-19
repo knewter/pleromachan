@@ -50,7 +50,7 @@ defmodule Pleroma.Web.MastodonAPI.StatusView do
     end)
     |> Enum.filter(& &1)
     |> Activity.create_by_object_ap_id_with_object()
-    |> Repo.all()
+    |> Repo.replica().all()
     |> Enum.reduce(%{}, fn activity, acc ->
       object = Object.normalize(activity, fetch: false)
       if object, do: Map.put(acc, object.data["id"], activity), else: acc
@@ -90,7 +90,7 @@ defmodule Pleroma.Web.MastodonAPI.StatusView do
       |> Activity.with_preloaded_object(:left)
       |> Activity.with_preloaded_bookmark(reading_user)
       |> Activity.with_set_thread_muted_field(reading_user)
-      |> Repo.all()
+      |> Repo.replica().all()
 
     relationships_opt =
       cond do
@@ -137,7 +137,7 @@ defmodule Pleroma.Web.MastodonAPI.StatusView do
         Activity.create_by_object_ap_id(object.data["id"])
         |> Activity.with_preloaded_bookmark(opts[:for])
         |> Activity.with_set_thread_muted_field(opts[:for])
-        |> Repo.one()
+        |> Repo.replica().one()
       end
 
     reblog_rendering_opts = Map.put(opts, :activity, reblogged_parent_activity)

@@ -40,15 +40,22 @@ config :pleroma, :instance,
 
 config :pleroma, :activitypub, sign_object_fetches: false, follow_handshake_timeout: 0
 
-# Configure your database
-config :pleroma, Pleroma.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "pleroma_test",
-  hostname: System.get_env("DB_HOST") || "localhost",
-  pool: Ecto.Adapters.SQL.Sandbox,
-  pool_size: 50
+replicas = [
+  Pleroma.Repo,
+  Pleroma.Repo.Replica1
+]
+
+for repo <- replicas do
+  config :pleroma, repo,
+    adapter: Ecto.Adapters.Postgres,
+    username: "postgres",
+    password: "postgres",
+    database: "pleroma_test",
+    hostname: "localhost",
+    hostname: System.get_env("DB_HOST") || "localhost",
+    pool: Ecto.Adapters.SQL.Sandbox,
+    pool_size: 10
+end
 
 config :pleroma, :dangerzone, override_repo_pool_size: true
 

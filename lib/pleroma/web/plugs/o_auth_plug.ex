@@ -54,7 +54,7 @@ defmodule Pleroma.Web.Plugs.OAuthPlug do
         preload: [user: user]
       )
 
-    with %Token{user: user} = token_record <- Repo.one(query) do
+    with %Token{user: user} = token_record <- Repo.replica().one(query) do
       {:ok, user, token_record}
     end
   end
@@ -64,7 +64,7 @@ defmodule Pleroma.Web.Plugs.OAuthPlug do
     query =
       from(t in Token, where: t.token == ^token, join: app in assoc(t, :app), preload: [app: app])
 
-    with %Token{app: app} = token_record <- Repo.one(query) do
+    with %Token{app: app} = token_record <- Repo.replica().one(query) do
       {:ok, app, token_record}
     end
   end

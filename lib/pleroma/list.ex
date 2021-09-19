@@ -42,7 +42,7 @@ defmodule Pleroma.List do
         limit: 50
       )
 
-    Repo.all(query)
+    Repo.replica().all(query)
   end
 
   def get(id, %{id: user_id} = _user) do
@@ -53,11 +53,11 @@ defmodule Pleroma.List do
         where: l.user_id == ^user_id
       )
 
-    Repo.one(query)
+    Repo.replica().one(query)
   end
 
   def get_by_ap_id(ap_id) do
-    Repo.get_by(__MODULE__, ap_id: ap_id)
+    Repo.replica().get_by(__MODULE__, ap_id: ap_id)
   end
 
   def get_following(%Pleroma.List{following: following} = _list) do
@@ -67,7 +67,7 @@ defmodule Pleroma.List do
         where: u.follower_address in ^following
       )
 
-    {:ok, Repo.all(q)}
+    {:ok, Repo.replica().all(q)}
   end
 
   # Get lists the activity should be streamed to.
@@ -80,7 +80,7 @@ defmodule Pleroma.List do
         where: fragment("? && ?", l.following, ^[actor.follower_address])
       )
 
-    Repo.all(query)
+    Repo.replica().all(query)
   end
 
   # Get lists to which the account belongs.
@@ -88,7 +88,7 @@ defmodule Pleroma.List do
     Pleroma.List
     |> where([l], l.user_id == ^owner.id)
     |> where([l], fragment("? = ANY(?)", ^user.follower_address, l.following))
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def rename(%Pleroma.List{} = list, title) do
@@ -114,13 +114,13 @@ defmodule Pleroma.List do
   end
 
   def follow(%Pleroma.List{id: id}, %User{} = followed) do
-    list = Repo.get(Pleroma.List, id)
+    list = Repo.replica().get(Pleroma.List, id)
     %{following: following} = list
     update_follows(list, %{following: Enum.uniq([followed.follower_address | following])})
   end
 
   def unfollow(%Pleroma.List{id: id}, %User{} = unfollowed) do
-    list = Repo.get(Pleroma.List, id)
+    list = Repo.replica().get(Pleroma.List, id)
     %{following: following} = list
     update_follows(list, %{following: List.delete(following, unfollowed.follower_address)})
   end
@@ -139,7 +139,7 @@ defmodule Pleroma.List do
     Pleroma.List
     |> where([l], ^follower_address in l.following)
     |> select([l], l.ap_id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def memberships(_), do: []

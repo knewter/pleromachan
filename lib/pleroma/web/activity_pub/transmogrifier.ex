@@ -504,7 +504,7 @@ defmodule Pleroma.Web.ActivityPub.Transmogrifier do
         # Check if we have a create activity for this
         with {:ok, object_id} <- ObjectValidators.ObjectID.cast(data["object"]),
              %Activity{data: %{"actor" => actor}} <-
-               Activity.create_by_object_ap_id(object_id) |> Repo.one(),
+               Activity.create_by_object_ap_id(object_id) |> Repo.replica().one(),
              # We have one, insert a tombstone and retry
              {:ok, tombstone_data, _} <- Builder.tombstone(actor, object_id),
              {:ok, _tombstone} <- Object.create(tombstone_data) do
@@ -642,7 +642,7 @@ defmodule Pleroma.Web.ActivityPub.Transmogrifier do
         |> Object.self_replies()
         |> select([o], fragment("?->>'id'", o.data))
         |> limit(^limit)
-        |> Repo.all()
+        |> Repo.replica().all()
       else
         _ -> []
       end

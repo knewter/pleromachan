@@ -235,7 +235,7 @@ defmodule Pleroma.User do
         user,
         restrict_deactivated?
       ])
-      |> Repo.all()
+      |> Repo.replica().all()
     end
 
     # `def blocked_users_ap_ids/2`, `def muted_users_ap_ids/2`, `def reblog_muted_users_ap_ids/2`,
@@ -247,7 +247,7 @@ defmodule Pleroma.User do
         restrict_deactivated?
       ])
       |> select([u], u.ap_id)
-      |> Repo.all()
+      |> Repo.replica().all()
     end
   end
 
@@ -792,7 +792,7 @@ defmodule Pleroma.User do
 
     autofollowed_users =
       User.Query.build(%{nickname: candidates, local: true, is_active: true})
-      |> Repo.all()
+      |> Repo.replica().all()
 
     follow_all(user, autofollowed_users)
   end
@@ -801,7 +801,7 @@ defmodule Pleroma.User do
     candidates = Config.get([:instance, :autofollowing_nicknames])
 
     User.Query.build(%{nickname: candidates, local: true, deactivated: false})
-    |> Repo.all()
+    |> Repo.replica().all()
     |> Enum.each(&follow(&1, user, :follow_accept))
 
     {:ok, :success}
@@ -1042,23 +1042,31 @@ defmodule Pleroma.User do
   end
 
   def get_by_id(id) do
-    Repo.get_by(User, id: id)
+    get_by_id(Repo, id)
+  end
+
+  def get_by_id(repo, id) do
+    repo.get_by(User, id: id)
   end
 
   def get_by_ap_id(ap_id) do
-    Repo.get_by(User, ap_id: ap_id)
+    get_by_ap_id(Repo, ap_id)
+  end
+
+  def get_by_ap_id(repo, ap_id) do
+    repo.get_by(User, ap_id: ap_id)
   end
 
   def get_all_by_ap_id(ap_ids) do
     from(u in __MODULE__,
       where: u.ap_id in ^ap_ids
     )
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def get_all_by_ids(ids) do
     from(u in __MODULE__, where: u.id in ^ids)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   # This is mostly an SPC migration fix. This guesses the user nickname by taking the last part
@@ -1095,7 +1103,7 @@ defmodule Pleroma.User do
 
   def get_user_friends_ap_ids(user) do
     from(u in User.get_friends_query(user), select: u.ap_id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec get_cached_user_friends_ap_ids(User.t()) :: [String.t()]
@@ -1132,7 +1140,7 @@ defmodule Pleroma.User do
 
     ap_id =
       @cachex.fetch!(:user_cache, key, fn _ ->
-        user = get_by_id(id)
+        user = get_by_id(Repo, id)
 
         if user do
           @cachex.put(:user_cache, "ap_id:#{user.ap_id}", user)
@@ -1176,13 +1184,17 @@ defmodule Pleroma.User do
 
   @spec get_by_nickname(String.t()) :: User.t() | nil
   def get_by_nickname(nickname) do
-    Repo.get_by(User, nickname: nickname) ||
+    get_by_nickname(Repo.replica(), nickname)
+  end
+
+  def get_by_nickname(repo, nickname) do
+    repo.get_by(User, nickname: nickname) ||
       if Regex.match?(~r(@#{Pleroma.Web.Endpoint.host()})i, nickname) do
-        Repo.get_by(User, nickname: local_nickname(nickname))
+        repo.get_by(User, nickname: local_nickname(nickname))
       end
   end
 
-  def get_by_email(email), do: Repo.get_by(User, email: email)
+  def get_by_email(email), do: Repo.replica().get_by(User, email: email)
 
   def get_by_nickname_or_email(nickname_or_email) do
     get_by_nickname(nickname_or_email) || get_by_email(nickname_or_email)
@@ -1191,7 +1203,21 @@ defmodule Pleroma.User do
   def fetch_by_nickname(nickname), do: ActivityPub.make_user_from_nickname(nickname)
 
   def get_or_fetch_by_nickname(nickname) do
-    with %User{} = user <- get_by_nickname(nickname) do
+    with %User{} = user <- get_by_nickname(Repo, nickname) do
+      {:ok, user}
+    else
+      _e ->
+        with [_nick, _domain] <- String.split(nickname, "@"),
+             {:ok, user} <- fetch_by_nickname(nickname) do
+          {:ok, user}
+        else
+          _e -> {:error, "not found " <> nickname}
+        end
+    end
+  end
+
+  def get_or_fetch_by_nickname(repo, nickname) do
+    with %User{} = user <- get_by_nickname(repo, nickname) do
       {:ok, user}
     else
       _e ->
@@ -1222,7 +1248,7 @@ defmodule Pleroma.User do
   def get_followers(%User{} = user, page \\ nil) do
     user
     |> get_followers_query(page)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec get_external_followers(User.t(), pos_integer() | nil) :: {:ok, list(User.t())}
@@ -1230,14 +1256,14 @@ defmodule Pleroma.User do
     user
     |> get_followers_query(page)
     |> User.Query.build(%{external: true})
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def get_followers_ids(%User{} = user, page \\ nil) do
     user
     |> get_followers_query(page)
     |> select([u], u.id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec get_friends_query(User.t(), pos_integer() | nil) :: Ecto.Query.t()
@@ -1257,21 +1283,21 @@ defmodule Pleroma.User do
   def get_friends(%User{} = user, page \\ nil) do
     user
     |> get_friends_query(page)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def get_friends_ap_ids(%User{} = user) do
     user
     |> get_friends_query(nil)
     |> select([u], u.ap_id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def get_friends_ids(%User{} = user, page \\ nil) do
     user
     |> get_friends_query(page)
     |> select([u], u.id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def increase_note_count(%User{} = user) do
@@ -1310,7 +1336,7 @@ defmodule Pleroma.User do
           where: fragment("?->>'actor' = ? and ?->>'type' = 'Note'", a.data, ^user.ap_id, a.data),
           select: count(a.id)
         )
-        |> Repo.one()
+        |> Repo.replica().one()
 
     user
     |> cast(%{note_count: note_count}, [:note_count])
@@ -1386,7 +1412,7 @@ defmodule Pleroma.User do
     criteria = if local_only, do: Map.put(criteria, :local, true), else: criteria
 
     User.Query.build(criteria)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec get_recipients_from_activity(Activity.t()) :: [User.t()]
@@ -1396,7 +1422,7 @@ defmodule Pleroma.User do
     query = User.Query.build(%{recipients_from_activity: to, local: true, is_active: true})
 
     query
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec mute(User.t(), User.t(), map()) ::
@@ -1578,7 +1604,7 @@ defmodule Pleroma.User do
       |> where([user_rel, u], user_rel.relationship_type in ^relationship_types)
       |> select([user_rel, u], [user_rel.relationship_type, fragment("array_agg(?)", u.ap_id)])
       |> group_by([user_rel, u], user_rel.relationship_type)
-      |> Repo.all()
+      |> Repo.replica().all()
       |> Enum.into(%{}, fn [k, v] -> {k, v} end)
 
     Enum.into(
@@ -1603,7 +1629,7 @@ defmodule Pleroma.User do
     |> maybe_filter_on_ap_id(ap_ids)
     |> select([user_rel, u], u.ap_id)
     |> distinct(true)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   defp maybe_filter_on_ap_id(query, ap_ids) when is_list(ap_ids) do
@@ -1817,7 +1843,7 @@ defmodule Pleroma.User do
         do: limit(query, ^opts[:limit]),
         else: query
 
-    Repo.all(query)
+    Repo.replica().all(query)
   end
 
   def delete_notifications_from_user_activities(%User{ap_id: ap_id}) do
@@ -2094,7 +2120,7 @@ defmodule Pleroma.User do
   @spec all_superusers() :: [User.t()]
   def all_superusers do
     User.Query.build(%{super_users: true, local: true, is_active: true})
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def muting_reblogs?(%User{} = user, %User{} = target) do
@@ -2128,7 +2154,7 @@ defmodule Pleroma.User do
         having: max(n.updated_at) > datetime_add(^now, ^negative_inactivity_threshold, "day"),
         select: n.user_id
       )
-      |> Pleroma.Repo.all()
+      |> Pleroma.Repo.replica().all()
 
     from(u in Pleroma.User,
       left_join: a in Pleroma.Activity,
@@ -2218,7 +2244,7 @@ defmodule Pleroma.User do
       where: u.nickname in ^nicknames,
       select: u.ap_id
     )
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   defp put_password_hash(
@@ -2242,7 +2268,7 @@ defmodule Pleroma.User do
       inner_join: delivery in assoc(u, :deliveries),
       where: delivery.object_id == ^object_id
     )
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def change_email(user, email) do
@@ -2489,6 +2515,6 @@ defmodule Pleroma.User do
     __MODULE__
     |> where([u], u.last_active_at >= ^active_after)
     |> where([u], u.local == true)
-    |> Repo.aggregate(:count)
+    |> Repo.replica().aggregate(:count)
   end
 end

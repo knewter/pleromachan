@@ -82,7 +82,7 @@ defmodule Pleroma.ScheduledActivity do
     |> where(user_id: ^user_id)
     |> where([sa], type(sa.scheduled_at, :date) == type(^scheduled_at, :date))
     |> select([sa], count(sa.id))
-    |> Repo.one()
+    |> Repo.replica().one()
     |> Kernel.>=(Config.get([ScheduledActivity, :daily_user_limit]))
   end
 
@@ -90,7 +90,7 @@ defmodule Pleroma.ScheduledActivity do
     ScheduledActivity
     |> where(user_id: ^user_id)
     |> select([sa], count(sa.id))
-    |> Repo.one()
+    |> Repo.replica().one()
     |> Kernel.>=(Config.get([ScheduledActivity, :total_user_limit]))
   end
 
@@ -139,7 +139,7 @@ defmodule Pleroma.ScheduledActivity do
     ScheduledActivity
     |> where(user_id: ^user.id)
     |> where(id: ^scheduled_activity_id)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   @spec update(ScheduledActivity.t(), map()) ::
@@ -194,7 +194,7 @@ defmodule Pleroma.ScheduledActivity do
 
     ScheduledActivity
     |> where([sa], sa.scheduled_at < ^naive_datetime)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def job_query(scheduled_activity_id) do

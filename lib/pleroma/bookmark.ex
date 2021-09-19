@@ -49,7 +49,7 @@ defmodule Pleroma.Bookmark do
     Bookmark
     |> where(user_id: ^user_id)
     |> where(activity_id: ^activity_id)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   @spec destroy(FlakeId.Ecto.CompatType.t(), FlakeId.Ecto.CompatType.t()) ::

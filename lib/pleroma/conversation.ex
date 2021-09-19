@@ -38,7 +38,7 @@ defmodule Pleroma.Conversation do
   end
 
   def get_for_ap_id(ap_id) do
-    Repo.get_by(__MODULE__, ap_id: ap_id)
+    Repo.replica().get_by(__MODULE__, ap_id: ap_id)
   end
 
   def maybe_create_recipientships(participation, activity) do

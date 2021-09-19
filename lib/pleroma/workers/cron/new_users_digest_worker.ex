@@ -28,7 +28,7 @@ defmodule Pleroma.Workers.Cron.NewUsersDigestWorker do
         }
         |> User.Query.build()
         |> where([u], u.inserted_at >= ^a_day_ago and u.inserted_at < ^today)
-        |> Repo.all()
+        |> Repo.replica().all()
         |> Enum.map(fn user ->
           latest_status =
             Activity
@@ -37,13 +37,13 @@ defmodule Pleroma.Workers.Cron.NewUsersDigestWorker do
             |> Activity.with_preloaded_object()
             |> order_by(desc: :inserted_at)
             |> limit(1)
-            |> Repo.one()
+            |> Repo.replica().one()
 
           total_statuses =
             Activity
             |> Activity.Queries.by_actor(user.ap_id)
             |> Activity.Queries.by_type("Create")
-            |> Repo.aggregate(:count, :id)
+            |> Repo.replica().aggregate(:count, :id)
 
           {user, total_statuses, latest_status}
         end)
@@ -52,7 +52,7 @@ defmodule Pleroma.Workers.Cron.NewUsersDigestWorker do
         %{is_admin: true}
         |> User.Query.build()
         |> where([u], not is_nil(u.email))
-        |> Repo.all()
+        |> Repo.replica().all()
         |> Enum.map(&Pleroma.Emails.NewUsersDigestEmail.new_users(&1, users_and_statuses))
         |> Enum.each(&Pleroma.Emails.Mailer.deliver/1)
       end

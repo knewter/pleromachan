@@ -16,7 +16,7 @@ defmodule Pleroma.Web.TwitterAPI.PasswordController do
   alias Pleroma.User
 
   def reset(conn, %{"token" => token}) do
-    with %{used: false} = token <- Repo.get_by(PasswordResetToken, %{token: token}),
+    with %{used: false} = token <- Repo.replica().get_by(PasswordResetToken, %{token: token}),
          false <- PasswordResetToken.expired?(token),
          %User{} = user <- User.get_cached_by_id(token.user_id) do
       render(conn, "reset.html", %{

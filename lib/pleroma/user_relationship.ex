@@ -129,7 +129,7 @@ defmodule Pleroma.UserRelationship do
       )
     )
     |> select([ur], [ur.relationship_type, ur.source_id, ur.target_id])
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def exists?(dictionary, rel_type, source, target, func) do

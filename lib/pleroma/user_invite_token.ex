@@ -55,7 +55,7 @@ defmodule Pleroma.UserInviteToken do
   @spec list_invites() :: [UserInviteToken.t()]
   def list_invites do
     query = from(u in UserInviteToken, order_by: u.id)
-    Repo.all(query)
+    Repo.replica().all(query)
   end
 
   @spec update_invite!(UserInviteToken.t(), map()) :: UserInviteToken.t() | no_return()
@@ -70,11 +70,11 @@ defmodule Pleroma.UserInviteToken do
   end
 
   @spec find_by_token!(token()) :: UserInviteToken.t() | no_return()
-  def find_by_token!(token), do: Repo.get_by!(UserInviteToken, token: token)
+  def find_by_token!(token), do: Repo.replica().get_by!(UserInviteToken, token: token)
 
   @spec find_by_token(token()) :: {:ok, UserInviteToken.t()} | nil
   def find_by_token(token) do
-    with %UserInviteToken{} = invite <- Repo.get_by(UserInviteToken, token: token) do
+    with %UserInviteToken{} = invite <- Repo.replica().get_by(UserInviteToken, token: token) do
       {:ok, invite}
     end
   end

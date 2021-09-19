@@ -24,7 +24,7 @@ defmodule Pleroma.Web.AdminAPI.Search do
 
     count = Repo.aggregate(query, :count, :id)
 
-    results = Repo.all(paginated_query)
+    results = Repo.replica().all(paginated_query)
     {:ok, results, count}
   end
 end

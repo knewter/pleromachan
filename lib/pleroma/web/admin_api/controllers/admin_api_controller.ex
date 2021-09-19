@@ -128,7 +128,7 @@ defmodule Pleroma.Web.AdminAPI.AdminAPIController do
     with %User{id: user_id} <- User.get_cached_by_nickname_or_id(nickname, for: admin) do
       chats =
         Pleroma.Chat.for_user_query(user_id)
-        |> Pleroma.Repo.all()
+        |> Pleroma.Repo.replica().all()
 
       conn
       |> put_view(AdminAPI.ChatView)

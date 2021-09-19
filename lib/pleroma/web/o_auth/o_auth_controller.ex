@@ -62,7 +62,9 @@ defmodule Pleroma.Web.OAuth.OAuthController do
         %Plug.Conn{assigns: %{token: %Token{} = token}} = conn,
         %{"client_id" => client_id} = params
       ) do
-    with %Token{} = t <- Repo.get_by(Token, token: token.token) |> Repo.preload(:app),
+    repo = Repo.replica()
+
+    with %Token{} = t <- repo.get_by(Token, token: token.token) |> repo.preload(:app),
          ^client_id <- t.app.client_id do
       handle_existing_authorization(conn, params)
     else
@@ -73,7 +75,7 @@ defmodule Pleroma.Web.OAuth.OAuthController do
   def authorize(%Plug.Conn{} = conn, params), do: do_authorize(conn, params)
 
   defp do_authorize(%Plug.Conn{} = conn, params) do
-    app = Repo.get_by(App, client_id: params["client_id"])
+    app = Repo.replica().get_by(App, client_id: params["client_id"])
     available_scopes = (app && app.scopes) || []
     scopes = Scopes.fetch_scopes(params, available_scopes)
 
@@ -116,7 +118,7 @@ defmodule Pleroma.Web.OAuth.OAuthController do
          %Plug.Conn{assigns: %{token: %Token{} = token}} = conn,
          %{} = params
        ) do
-    app = Repo.preload(token, :app).app
+    app = Repo.replica().preload(token, :app).app
 
     redirect_uri =
       if is_binary(params["redirect_uri"]) do
@@ -166,7 +168,7 @@ defmodule Pleroma.Web.OAuth.OAuthController do
   def after_create_authorization(%Plug.Conn{} = conn, %Authorization{} = auth, %{
         "authorization" => %{"redirect_uri" => redirect_uri} = auth_attrs
       }) do
-    app = Repo.preload(auth, :app).app
+    app = Repo.replica().preload(auth, :app).app
 
     # An extra safety measure before we redirect (also done in `do_create_authorization/2`)
     if redirect_uri in String.split(app.redirect_uris) do
@@ -503,10 +505,10 @@ defmodule Pleroma.Web.OAuth.OAuthController do
 
   def register(%Plug.Conn{} = conn, %{"authorization" => _, "op" => "connect"} = params) do
     with registration_id when not is_nil(registration_id) <- get_session_registration_id(conn),
-         %Registration{} = registration <- Repo.get(Registration, registration_id),
+         %Registration{} = registration <- Repo.replica().get(Registration, registration_id),
          {_, {:ok, auth, _user}} <-
            {:create_authorization, do_create_authorization(conn, params)},
-         %User{} = user <- Repo.preload(auth, :user).user,
+         %User{} = user <- Repo.replica().preload(auth, :user).user,
          {:ok, _updated_registration} <- Registration.bind_to_user(registration, user) do
       conn
       |> put_session_registration_id(nil)
@@ -522,7 +524,7 @@ defmodule Pleroma.Web.OAuth.OAuthController do
 
   def register(%Plug.Conn{} = conn, %{"authorization" => _, "op" => "register"} = params) do
     with registration_id when not is_nil(registration_id) <- get_session_registration_id(conn),
-         %Registration{} = registration <- Repo.get(Registration, registration_id),
+         %Registration{} = registration <- Repo.replica().get(Registration, registration_id),
          {:ok, user} <- Authenticator.create_from_registration(conn, registration) do
       conn
       |> put_session_registration_id(nil)
@@ -570,7 +572,7 @@ defmodule Pleroma.Web.OAuth.OAuthController do
        ) do
     with {_, {:ok, %User{} = user}} <-
            {:get_user, (user && {:ok, user}) || Authenticator.get_user(conn)},
-         %App{} = app <- Repo.get_by(App, client_id: client_id),
+         %App{} = app <- Repo.replica().get_by(App, client_id: client_id),
          true <- redirect_uri in String.split(app.redirect_uris),
          requested_scopes <- Scopes.fetch_scopes(auth_attrs, app.scopes),
          {:ok, auth} <- do_create_authorization(user, app, requested_scopes) do

@@ -254,7 +254,7 @@ defmodule Pleroma.Notification do
     from(n in for_user_query(user),
       where: n.updated_at > ^date
     )
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def set_read_up_to(%{id: user_id} = user, id) do
@@ -277,7 +277,7 @@ defmodule Pleroma.Notification do
 
     for_user_query(user)
     |> where([n], n.id in ^notification_ids)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec read_one(User.t(), String.t()) ::
@@ -650,7 +650,7 @@ defmodule Pleroma.Notification do
       where: n.user_id == ^user.id,
       where: n.activity_id == ^activity.id
     )
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   @spec mark_context_as_read(User.t(), String.t()) :: {integer(), nil | [term()]}

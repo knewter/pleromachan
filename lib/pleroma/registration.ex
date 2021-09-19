@@ -49,7 +49,7 @@ defmodule Pleroma.Registration do
   end
 
   def get_by_provider_uid(provider, uid) do
-    Repo.get_by(Registration,
+    Repo.replica().get_by(Registration,
       provider: to_string(provider),
       uid: to_string(uid)
     )

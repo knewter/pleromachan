@@ -69,14 +69,20 @@ config :logger, :console, format: "[$level] $message\n"
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
 
-# Configure your database
-config :pleroma, Pleroma.Repo,
-  adapter: Ecto.Adapters.Postgres,
-  username: "postgres",
-  password: "postgres",
-  database: "pleroma_dev",
-  hostname: "localhost",
-  pool_size: 100
+replicas = [
+  Pleroma.Repo,
+  Pleroma.Repo.Replica1
+]
+
+for repo <- replicas do
+  config :pleroma, repo,
+    adapter: Ecto.Adapters.Postgres,
+    username: "postgres",
+    password: "postgres",
+    database: "pleroma_dev",
+    hostname: "localhost",
+    pool_size: 10
+end
 
 config :pleroma, :dangerzone, override_repo_pool_size: true
 

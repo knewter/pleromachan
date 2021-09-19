@@ -33,7 +33,7 @@ defmodule Pleroma.Web.MastodonAPI.NotificationView do
       |> Enum.map(& &1.data["object"])
       |> Activity.create_by_object_ap_id()
       |> Activity.with_preloaded_object(:left)
-      |> Pleroma.Repo.all()
+      |> Pleroma.Repo.replica().all()
 
     relationships_opt =
       cond do

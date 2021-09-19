@@ -102,9 +102,7 @@ defmodule Pleroma.Web.ConnCase do
               end)
 
             flunk(
-              "Response does not conform to schema of #{op_id} operation: #{
-                Enum.join(errors, "\n")
-              }\n#{inspect(json)}"
+              "Response does not conform to schema of #{op_id} operation: #{Enum.join(errors, "\n")}\n#{inspect(json)}"
             )
         end
       end
@@ -119,6 +117,7 @@ defmodule Pleroma.Web.ConnCase do
     DataCase.setup_multi_process_mode(tags)
     DataCase.setup_streamer(tags)
     DataCase.stub_pipeline()
+    DataCase.setup_replica_test_fixes()
 
     Mox.verify_on_exit!()
 

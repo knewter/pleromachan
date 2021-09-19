@@ -74,7 +74,7 @@ defmodule Pleroma.Conversation.Participation do
       __MODULE__
       |> where([p], p.user_id == ^target_user.id)
       |> select([p], p.conversation_id)
-      |> Repo.all()
+      |> Repo.replica().all()
 
     __MODULE__
     |> where([p], p.user_id == ^user.id)
@@ -142,7 +142,7 @@ defmodule Pleroma.Conversation.Participation do
       where: p.user_id == ^user.id,
       where: p.conversation_id == ^conversation.id
     )
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def for_user_with_last_activity_id(user, params \\ %{}) do
@@ -178,7 +178,7 @@ defmodule Pleroma.Conversation.Participation do
         __MODULE__
       end
 
-    Repo.get(query, id)
+    Repo.replica().get(query, id)
   end
 
   def set_recipients(participation, user_ids) do
@@ -210,7 +210,7 @@ defmodule Pleroma.Conversation.Participation do
   @spec unread_count(User.t()) :: integer()
   def unread_count(%User{id: user_id}) do
     from(q in __MODULE__, where: q.user_id == ^user_id and q.read == false)
-    |> Repo.aggregate(:count, :id)
+    |> Repo.replica().aggregate(:count, :id)
   end
 
   def unread_conversation_count_for_user(user) do

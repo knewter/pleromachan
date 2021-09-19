@@ -134,7 +134,7 @@ defmodule Pleroma.Web.OAuth.Token do
   def get_user_tokens(%User{id: user_id}) do
     Query.get_by_user(user_id)
     |> Query.preload([:app])
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def is_expired?(%__MODULE__{valid_until: valid_until}) do

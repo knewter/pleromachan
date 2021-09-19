@@ -87,7 +87,7 @@ defmodule Pleroma.Web.Push.Impl do
     Subscription
     |> where(user_id: ^user_id)
     |> preload(:token)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def build_sub(subscription) do

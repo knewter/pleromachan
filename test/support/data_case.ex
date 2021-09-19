@@ -93,9 +93,19 @@ defmodule Pleroma.DataCase do
     :ok
   end
 
+  @replicas [
+    Pleroma.Repo.Replica1
+  ]
+  def setup_replica_test_fixes do
+    for replica <- @replicas do
+      replica.put_dynamic_repo(Pleroma.Repo)
+    end
+  end
+
   setup tags do
     setup_multi_process_mode(tags)
     setup_streamer(tags)
+    setup_replica_test_fixes()
     stub_pipeline()
 
     Mox.verify_on_exit!()

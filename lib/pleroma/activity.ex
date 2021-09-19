@@ -145,7 +145,7 @@ defmodule Pleroma.Activity do
   def get_by_ap_id(ap_id) do
     ap_id
     |> Queries.by_ap_id()
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def get_bookmark(%Activity{} = activity, %User{} = user) do
@@ -167,7 +167,7 @@ defmodule Pleroma.Activity do
 
     ActivityPub.fetch_activities_query([], opts)
     |> where(id: ^activity_id)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def change(struct, params \\ %{}) do
@@ -181,7 +181,7 @@ defmodule Pleroma.Activity do
     ap_id
     |> Queries.by_ap_id()
     |> with_preloaded_object(:left)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   @doc """
@@ -222,7 +222,7 @@ defmodule Pleroma.Activity do
           with_filters_query
         end
 
-      Repo.one(with_preloads_query)
+      Repo.replica().one(with_preloads_query)
     end
   end
 
@@ -230,7 +230,7 @@ defmodule Pleroma.Activity do
     Activity
     |> where([a], a.id in ^ids)
     |> with_preloaded_object()
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @doc """
@@ -247,13 +247,13 @@ defmodule Pleroma.Activity do
   def get_all_create_by_object_ap_id(ap_id) do
     ap_id
     |> create_by_object_ap_id()
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def get_create_by_object_ap_id(ap_id) when is_binary(ap_id) do
     create_by_object_ap_id(ap_id)
     |> restrict_deactivated_users()
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def get_create_by_object_ap_id(_), do: nil
@@ -272,7 +272,7 @@ defmodule Pleroma.Activity do
   def get_create_by_object_ap_id_with_object(ap_id) when is_binary(ap_id) do
     ap_id
     |> create_by_object_ap_id_with_object()
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def get_create_by_object_ap_id_with_object(_), do: nil
@@ -344,7 +344,7 @@ defmodule Pleroma.Activity do
     Activity
     |> where([s], s.id in ^status_ids)
     |> where([s], s.actor == ^actor)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def follow_requests_for_actor(%User{ap_id: ap_id}) do
@@ -358,13 +358,13 @@ defmodule Pleroma.Activity do
     Queries.by_type("Follow")
     |> where([a], fragment("?->>'state' = 'pending'", a.data))
     |> where([a], a.actor == ^ap_id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def restrict_deactivated_users(query) do
     deactivated_users =
       from(u in User.Query.build(%{deactivated: true}), select: u.ap_id)
-      |> Repo.all()
+      |> Repo.replica().all()
 
     Activity.Queries.exclude_authors(query, deactivated_users)
   end
@@ -390,7 +390,7 @@ defmodule Pleroma.Activity do
     |> Queries.by_object_id()
     |> with_preloaded_object()
     |> first()
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def get_by_object_ap_id_with_object(_), do: nil
