@@ -33,7 +33,7 @@ defmodule Pleroma.Marker do
     user
     |> get_query(timelines)
     |> unread_count_query()
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec upsert(User.t(), map()) :: {:ok | :error, any()}

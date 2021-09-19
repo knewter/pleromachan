@@ -59,7 +59,7 @@ defmodule Pleroma.Workers.PurgeExpiredActivity do
       where: j.queue == "activity_expiration",
       where: fragment("?->>'activity_id' = ?", j.args, ^id)
     )
-    |> Pleroma.Repo.one()
+    |> Pleroma.Repo.replica().one()
   end
 
   @spec expires_late_enough?(DateTime.t()) :: boolean()

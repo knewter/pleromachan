@@ -35,7 +35,7 @@ defmodule Pleroma.Filter do
         where: f.user_id == ^user_id
       )
 
-    Repo.one(query)
+    Repo.replica().one(query)
   end
 
   @spec get_active(Ecto.Query.t() | module()) :: Ecto.Query.t()
@@ -57,7 +57,7 @@ defmodule Pleroma.Filter do
         order_by: [desc: :id]
       )
 
-    Repo.all(query)
+    Repo.replica().all(query)
   end
 
   @spec create(map()) :: {:ok, t()} | {:error, Ecto.Changeset.t()}
@@ -99,7 +99,7 @@ defmodule Pleroma.Filter do
       )
 
     filter_id =
-      case Repo.one(max_id_query) do
+      case Repo.replica().one(max_id_query) do
         # Start allocating from 1
         nil ->
           1

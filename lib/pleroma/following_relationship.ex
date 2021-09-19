@@ -51,7 +51,7 @@ defmodule Pleroma.FollowingRelationship do
   def get(%User{} = follower, %User{} = following) do
     __MODULE__
     |> where(follower_id: ^follower.id, following_id: ^following.id)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def update(follower, following, :follow_reject), do: unfollow(follower, following)
@@ -109,7 +109,7 @@ defmodule Pleroma.FollowingRelationship do
   def follower_count(%User{} = user) do
     %{followers: user, deactivated: false}
     |> User.Query.build()
-    |> Repo.aggregate(:count, :id)
+    |> Repo.replica().aggregate(:count, :id)
   end
 
   def followers_query(%User{} = user) do
@@ -136,7 +136,7 @@ defmodule Pleroma.FollowingRelationship do
         query
       end
 
-    Repo.all(query)
+    Repo.replica().all(query)
   end
 
   def following_count(%User{id: nil}), do: 0
@@ -144,7 +144,7 @@ defmodule Pleroma.FollowingRelationship do
   def following_count(%User{} = user) do
     %{friends: user, deactivated: false}
     |> User.Query.build()
-    |> Repo.aggregate(:count, :id)
+    |> Repo.replica().aggregate(:count, :id)
   end
 
   def get_follow_requests(%User{id: id}) do
@@ -154,13 +154,13 @@ defmodule Pleroma.FollowingRelationship do
     |> where([r], r.following_id == ^id)
     |> where([r, f], f.is_active == true)
     |> select([r, f], f)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def following?(%User{id: follower_id}, %User{id: followed_id}) do
     __MODULE__
     |> where(follower_id: ^follower_id, following_id: ^followed_id, state: ^:follow_accept)
-    |> Repo.exists?()
+    |> Repo.replica().exists?()
   end
 
   def following_query(%User{} = user) do
@@ -180,7 +180,7 @@ defmodule Pleroma.FollowingRelationship do
     following =
       following_query(user)
       |> select([r, u], u.follower_address)
-      |> Repo.all()
+      |> Repo.replica().all()
 
     if not user.local or user.invisible do
       following
@@ -196,7 +196,7 @@ defmodule Pleroma.FollowingRelationship do
     |> where([r, f], f.allow_following_move == true)
     |> limit(50)
     |> preload([:follower])
-    |> Repo.all()
+    |> Repo.replica().all()
     |> Enum.map(fn following_relationship ->
       Repo.delete(following_relationship)
       Pleroma.Web.CommonAPI.follow(following_relationship.follower, target)
@@ -230,7 +230,7 @@ defmodule Pleroma.FollowingRelationship do
         ^source_user_ids
       )
     )
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def find(following_relationships, follower, following) do
@@ -294,6 +294,6 @@ defmodule Pleroma.FollowingRelationship do
     user
     |> following_query()
     |> select([r, u], u.ap_id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 end

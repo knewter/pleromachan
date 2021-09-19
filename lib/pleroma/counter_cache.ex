@@ -33,7 +33,7 @@ defmodule Pleroma.CounterCache do
       "direct" => c.direct
     })
     |> where([c], c.instance == ^instance)
-    |> Repo.one()
+    |> Repo.replica().one()
     |> case do
       nil -> %{"public" => 0, "unlisted" => 0, "private" => 0, "direct" => 0}
       val -> val
@@ -48,7 +48,7 @@ defmodule Pleroma.CounterCache do
       "private" => type(sum(c.private), :integer),
       "direct" => type(sum(c.direct), :integer)
     })
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def set(instance, values) do

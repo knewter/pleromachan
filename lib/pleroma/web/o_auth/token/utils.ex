@@ -25,7 +25,7 @@ defmodule Pleroma.Web.OAuth.Token.Utils do
   end
 
   defp fetch_client({id, secret}) when is_binary(id) and is_binary(secret) do
-    Repo.get_by(App, client_id: id, client_secret: secret)
+    Repo.replica().get_by(App, client_id: id, client_secret: secret)
   end
 
   defp fetch_client({_id, _secret}), do: nil

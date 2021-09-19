@@ -43,7 +43,7 @@ defmodule Pleroma.Instances.Instance do
       |> Enum.filter(&(to_string(&1) != ""))
 
     unreachable_since_by_host =
-      Repo.all(
+      Repo.replica().all(
         from(i in Instance,
           where: i.host in ^hosts,
           select: {i.host, i.unreachable_since}
@@ -67,7 +67,7 @@ defmodule Pleroma.Instances.Instance do
   end
 
   def reachable?(url_or_host) when is_binary(url_or_host) do
-    !Repo.one(
+    !Repo.replica().one(
       from(i in Instance,
         where:
           i.host == ^host(url_or_host) and
@@ -81,7 +81,7 @@ defmodule Pleroma.Instances.Instance do
 
   def set_reachable(url_or_host) when is_binary(url_or_host) do
     with host <- host(url_or_host),
-         %Instance{} = existing_record <- Repo.get_by(Instance, %{host: host}) do
+         %Instance{} = existing_record <- Repo.replica().get_by(Instance, %{host: host}) do
       {:ok, _instance} =
         existing_record
         |> changeset(%{unreachable_since: nil})
@@ -96,7 +96,7 @@ defmodule Pleroma.Instances.Instance do
   def set_unreachable(url_or_host, unreachable_since) when is_binary(url_or_host) do
     unreachable_since = parse_datetime(unreachable_since) || NaiveDateTime.utc_now()
     host = host(url_or_host)
-    existing_record = Repo.get_by(Instance, %{host: host})
+    existing_record = Repo.replica().get_by(Instance, %{host: host})
 
     changes = %{unreachable_since: unreachable_since}
 
@@ -127,7 +127,7 @@ defmodule Pleroma.Instances.Instance do
       order_by: i.unreachable_since,
       select: {i.host, i.unreachable_since}
     )
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   defp parse_datetime(datetime) when is_binary(datetime) do
@@ -137,7 +137,7 @@ defmodule Pleroma.Instances.Instance do
   defp parse_datetime(datetime), do: datetime
 
   def get_or_update_favicon(%URI{host: host} = instance_uri) do
-    existing_record = Repo.get_by(Instance, %{host: host})
+    existing_record = Repo.replica().get_by(Instance, %{host: host})
     now = NaiveDateTime.utc_now()
 
     if existing_record && existing_record.favicon_updated_at &&

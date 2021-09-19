@@ -129,7 +129,7 @@ defmodule Pleroma.Web.ActivityPub.UserView do
 
     query = User.get_friends_query(user)
     query = from(user in query, select: [:ap_id])
-    following = Repo.all(query)
+    following = Repo.replica().all(query)
 
     total =
       if showing_count do
@@ -148,7 +148,7 @@ defmodule Pleroma.Web.ActivityPub.UserView do
 
     query = User.get_friends_query(user)
     query = from(user in query, select: [:ap_id])
-    following = Repo.all(query)
+    following = Repo.replica().all(query)
 
     total =
       if showing_count do
@@ -177,7 +177,7 @@ defmodule Pleroma.Web.ActivityPub.UserView do
 
     query = User.get_followers_query(user)
     query = from(user in query, select: [:ap_id])
-    followers = Repo.all(query)
+    followers = Repo.replica().all(query)
 
     total =
       if showing_count do
@@ -196,7 +196,7 @@ defmodule Pleroma.Web.ActivityPub.UserView do
 
     query = User.get_followers_query(user)
     query = from(user in query, select: [:ap_id])
-    followers = Repo.all(query)
+    followers = Repo.replica().all(query)
 
     total =
       if showing_count do

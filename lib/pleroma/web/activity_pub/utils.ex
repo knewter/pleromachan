@@ -272,7 +272,7 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     |> Activity.Queries.by_object_id(id)
     |> Activity.Queries.by_type("Like")
     |> limit(1)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   @doc """
@@ -282,7 +282,7 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     id
     |> Activity.Queries.by_object_id()
     |> Activity.Queries.by_type("Like")
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec make_like_data(User.t(), map(), String.t()) :: map()
@@ -494,7 +494,7 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     |> Activity.Queries.by_object_id(followed_id)
     |> order_by([activity], fragment("? desc nulls last", activity.id))
     |> limit(1)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def fetch_latest_undo(%User{ap_id: ap_id}) do
@@ -503,7 +503,7 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     |> where(actor: ^ap_id)
     |> order_by([activity], fragment("? desc nulls last", activity.id))
     |> limit(1)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def get_latest_reaction(internal_activity_id, %{ap_id: ap_id}, emoji) do
@@ -516,7 +516,7 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     |> Activity.Queries.by_object_id(object_ap_id)
     |> order_by([activity], fragment("? desc nulls last", activity.id))
     |> limit(1)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   #### Announce-related helpers
@@ -531,7 +531,7 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     |> where(actor: ^actor)
     # this is to use the index
     |> Activity.Queries.by_object_id(ap_id)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   @doc """
@@ -646,7 +646,7 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     |> Activity.Queries.by_object_id(blocked_id)
     |> order_by([activity], fragment("? desc nulls last", activity.id))
     |> limit(1)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def make_block_data(blocker, blocked, activity_id) do
@@ -885,6 +885,6 @@ defmodule Pleroma.Web.ActivityPub.Utils do
     |> Activity.with_preloaded_object()
     |> where([a, object: o], fragment("(?)->>'inReplyTo' = ?", o.data, ^to_string(id)))
     |> where([a, object: o], fragment("(?)->>'type' = 'Answer'", o.data))
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 end

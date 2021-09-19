@@ -105,25 +105,25 @@ defmodule Pleroma.User.Backup do
     |> where(user_id: ^user_id)
     |> order_by(desc: :id)
     |> limit(1)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def list(%User{id: user_id}) do
     __MODULE__
     |> where(user_id: ^user_id)
     |> order_by(desc: :id)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   def remove_outdated(%__MODULE__{id: latest_id, user_id: user_id}) do
     __MODULE__
     |> where(user_id: ^user_id)
     |> where([b], b.id != ^latest_id)
-    |> Repo.all()
+    |> Repo.replica().all()
     |> Enum.each(&BackupWorker.delete/1)
   end
 
-  def get(id), do: Repo.get(__MODULE__, id)
+  def get(id), do: Repo.replica().get(__MODULE__, id)
 
   def process(%__MODULE__{} = backup) do
     with {:ok, zip_file} <- export(backup),

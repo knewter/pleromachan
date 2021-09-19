@@ -48,7 +48,7 @@ defmodule Pleroma.ThreadMute do
     context
     |> muters_query()
     |> maybe_filter_on_ap_id(ap_ids)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   defp maybe_filter_on_ap_id(query, ap_ids) when is_list(ap_ids) do

@@ -45,7 +45,7 @@ defmodule Pleroma.Config.TransferTask do
       # We need to restart applications for loaded settings take effect
 
       {logger, other} =
-        (Repo.all(ConfigDB) ++ deleted_settings)
+        (Repo.replica().all(ConfigDB) ++ deleted_settings)
         |> Enum.map(&merge_with_default/1)
         |> Enum.split_with(fn {group, _, _, _} -> group in [:logger, :quack] end)
 
@@ -148,9 +148,7 @@ defmodule Pleroma.Config.TransferTask do
     rescue
       error ->
         error_msg =
-          "updating env causes error, group: #{inspect(group)}, key: #{inspect(key)}, value: #{
-            inspect(value)
-          } error: #{inspect(error)}"
+          "updating env causes error, group: #{inspect(group)}, key: #{inspect(key)}, value: #{inspect(value)} error: #{inspect(error)}"
 
         Logger.warn(error_msg)
 

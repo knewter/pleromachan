@@ -124,9 +124,9 @@ defmodule Pleroma.Web.OAuth.App do
         offset: ^((params[:page] - 1) * params[:page_size])
       )
 
-    count = Repo.aggregate(__MODULE__, :count, :id)
+    count = Repo.replica().aggregate(__MODULE__, :count, :id)
 
-    {:ok, Repo.all(query), count}
+    {:ok, Repo.replica().all(query), count}
   end
 
   @spec destroy(pos_integer()) :: {:ok, t()} | {:error, Ecto.Changeset.t()}

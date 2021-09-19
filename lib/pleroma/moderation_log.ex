@@ -48,8 +48,8 @@ defmodule Pleroma.ModerationLog do
     query_with_pagination = base_query |> paginate_query(params)
 
     %{
-      items: Repo.all(query_with_pagination),
-      count: Repo.aggregate(base_query, :count, :id)
+      items: Repo.replica().all(query_with_pagination),
+      count: Repo.replica().aggregate(base_query, :count, :id)
     }
   end
 
@@ -481,9 +481,7 @@ defmodule Pleroma.ModerationLog do
           "visibility" => visibility
         }
       }) do
-    "@#{actor_nickname} updated status ##{subject_id}, set sensitive: '#{sensitive}', visibility: '#{
-      visibility
-    }'"
+    "@#{actor_nickname} updated status ##{subject_id}, set sensitive: '#{sensitive}', visibility: '#{visibility}'"
   end
 
   def get_log_entry_message(%ModerationLog{
@@ -523,9 +521,7 @@ defmodule Pleroma.ModerationLog do
           "subject" => subjects
         }
       }) do
-    "@#{actor_nickname} re-sent confirmation email for users: #{
-      users_to_nicknames_string(subjects)
-    }"
+    "@#{actor_nickname} re-sent confirmation email for users: #{users_to_nicknames_string(subjects)}"
   end
 
   def get_log_entry_message(%ModerationLog{

@@ -455,7 +455,7 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
   def fetch_activities_for_context(context, opts \\ %{}) do
     context
     |> fetch_activities_for_context_query(opts)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec fetch_latest_direct_activity_id_for_context(String.t(), keyword() | map()) ::
@@ -466,7 +466,7 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
     |> restrict_visibility(%{visibility: "direct"})
     |> limit(1)
     |> select([a], a.id)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   defp fetch_paginated_optimized(query, opts, pagination) do
@@ -812,7 +812,7 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
   defp restrict_hashtag_any(query, %{tag: [_ | _] = tags}) do
     hashtag_ids =
       from(ht in Hashtag, where: ht.name in ^tags, select: ht.id)
-      |> Repo.all()
+      |> Repo.replica().all()
 
     # Note: NO extra ordering should be done on "activities.id desc nulls last" for optimal plan
     from(
@@ -1169,7 +1169,7 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
   defp exclude_invisible_actors(query, _opts) do
     invisible_ap_ids =
       User.Query.build(%{invisible: true, select: [:ap_id]})
-      |> Repo.all()
+      |> Repo.replica().all()
       |> Enum.map(fn %{ap_id: ap_id} -> ap_id end)
 
     from([activity] in query, where: activity.actor not in ^invisible_ap_ids)
@@ -1590,9 +1590,7 @@ defmodule Pleroma.Web.ActivityPub.ActivityPub do
          %User{} = old_user <- User.get_by_nickname(nickname),
          {_, false} <- {:ap_id_comparison, data[:ap_id] == old_user.ap_id} do
       Logger.info(
-        "Found an old user for #{nickname}, the old ap id is #{old_user.ap_id}, new one is #{
-          data[:ap_id]
-        }, renaming."
+        "Found an old user for #{nickname}, the old ap id is #{old_user.ap_id}, new one is #{data[:ap_id]}, renaming."
       )
 
       old_user

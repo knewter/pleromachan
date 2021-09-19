@@ -8,10 +8,35 @@ defmodule Pleroma.Repo do
     adapter: Ecto.Adapters.Postgres,
     migration_timestamps: [type: :naive_datetime_usec]
 
+  @replicas [
+    Pleroma.Repo.Replica1
+  ]
+
+  for repo <- @replicas do
+    default_dynamic_repo =
+      if Mix.env() == :test do
+        Pleroma.Repo
+      else
+        repo
+      end
+
+    defmodule repo do
+      use Ecto.Repo,
+        otp_app: :pleroma,
+        adapter: Ecto.Adapters.Postgres,
+        read_only: true,
+        default_dynamic_repo: default_dynamic_repo
+    end
+  end
+
   import Ecto.Query
   require Logger
 
   defmodule Instrumenter, do: use(Prometheus.EctoInstrumenter)
+
+  def replica do
+    Enum.random(@replicas)
+  end
 
   @doc """
   Dynamically loads the repository url from the
@@ -24,7 +49,7 @@ defmodule Pleroma.Repo do
   @doc "find resource based on prepared query"
   @spec find_resource(Ecto.Query.t()) :: {:ok, struct()} | {:error, :not_found}
   def find_resource(%Ecto.Query{} = query) do
-    case __MODULE__.one(query) do
+    case __MODULE__.replica().one(query) do
       nil -> {:error, :not_found}
       resource -> {:ok, resource}
     end

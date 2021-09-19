@@ -141,7 +141,7 @@ defmodule Pleroma.Web.PleromaAPI.ChatController do
   def index(%{assigns: %{user: user}} = conn, params) do
     chats =
       index_query(user, params)
-      |> Repo.all()
+      |> Repo.replica().all()
 
     render(conn, "index.json", chats: chats)
   end

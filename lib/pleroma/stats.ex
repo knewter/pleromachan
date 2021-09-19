@@ -64,18 +64,20 @@ defmodule Pleroma.Stats do
           }
         }
   def calculate_stat_data do
+    repo = Repo
+
     peers =
       from(
         u in User,
         select: fragment("distinct split_part(?, '@', 2)", u.nickname),
         where: u.local != ^true
       )
-      |> Repo.all()
+      |> repo.all()
       |> Enum.filter(& &1)
 
     domain_count = Enum.count(peers)
 
-    status_count = Repo.aggregate(User.Query.build(%{local: true}), :sum, :note_count)
+    status_count = repo.aggregate(User.Query.build(%{local: true}), :sum, :note_count)
 
     users_query =
       from(u in User,
@@ -85,7 +87,7 @@ defmodule Pleroma.Stats do
         where: not u.invisible
       )
 
-    user_count = Repo.aggregate(users_query, :count, :id)
+    user_count = repo.aggregate(users_query, :count, :id)
 
     %{
       peers: peers,

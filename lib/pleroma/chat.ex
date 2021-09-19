@@ -54,12 +54,12 @@ defmodule Pleroma.Chat do
 
   @spec get_by_id(FlakeId.Ecto.CompatType.t()) :: t() | nil
   def get_by_id(id) do
-    Repo.get(__MODULE__, id)
+    Repo.replica().get(__MODULE__, id)
   end
 
   @spec get(FlakeId.Ecto.CompatType.t(), String.t()) :: t() | nil
   def get(user_id, recipient) do
-    Repo.get_by(__MODULE__, user_id: user_id, recipient: recipient)
+    Repo.replica().get_by(__MODULE__, user_id: user_id, recipient: recipient)
   end
 
   @spec get_or_create(FlakeId.Ecto.CompatType.t(), String.t()) ::

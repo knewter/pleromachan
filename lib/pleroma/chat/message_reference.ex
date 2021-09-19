@@ -35,9 +35,11 @@ defmodule Pleroma.Chat.MessageReference do
   end
 
   def get_by_id(id) do
+    repo = Repo.replica()
+
     __MODULE__
-    |> Repo.get(id)
-    |> Repo.preload(:object)
+    |> repo.get(id)
+    |> repo.preload(:object)
   end
 
   def delete(cm_ref) do
@@ -53,9 +55,11 @@ defmodule Pleroma.Chat.MessageReference do
   end
 
   def for_chat_and_object(%{id: chat_id}, %{id: object_id}) do
+    repo = Repo.replica()
+
     __MODULE__
-    |> Repo.get_by(chat_id: chat_id, object_id: object_id)
-    |> Repo.preload(:object)
+    |> repo.get_by(chat_id: chat_id, object_id: object_id)
+    |> repo.preload(:object)
   end
 
   def for_chat_query(chat) do
@@ -70,7 +74,7 @@ defmodule Pleroma.Chat.MessageReference do
     chat
     |> for_chat_query()
     |> limit(1)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   def create(chat, object, unread) do
@@ -89,7 +93,7 @@ defmodule Pleroma.Chat.MessageReference do
     chat
     |> for_chat_query()
     |> where([cmr], cmr.unread == true)
-    |> Repo.aggregate(:count)
+    |> Repo.replica().aggregate(:count)
   end
 
   def mark_as_read(cm_ref) do

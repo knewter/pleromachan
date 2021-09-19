@@ -98,7 +98,7 @@ defmodule Pleroma.Object do
   defp hashtags_changed?(_, _), do: false
 
   def get_by_id(nil), do: nil
-  def get_by_id(id), do: Repo.get(Object, id)
+  def get_by_id(id), do: Repo.replica().get(Object, id)
 
   def get_by_id_and_maybe_refetch(id, opts \\ []) do
     %{updated_at: updated_at} = object = get_by_id(id)
@@ -121,7 +121,9 @@ defmodule Pleroma.Object do
   def get_by_ap_id(nil), do: nil
 
   def get_by_ap_id(ap_id) do
-    Repo.one(from(object in Object, where: fragment("(?)->>'id' = ?", object.data, ^ap_id)))
+    Repo.replica().one(
+      from(object in Object, where: fragment("(?)->>'id' = ?", object.data, ^ap_id))
+    )
   end
 
   @doc """
@@ -135,7 +137,7 @@ defmodule Pleroma.Object do
         where: fragment("(?)->>'href' = ?", o.data, ^href)
       )
 
-    Repo.one(query)
+    Repo.replica().one(query)
   end
 
   defp warn_on_no_object_preloaded(ap_id) do

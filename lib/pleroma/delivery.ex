@@ -35,7 +35,7 @@ defmodule Pleroma.Delivery do
 
   def get(object_id, user_id) do
     from(d in Delivery, where: d.user_id == ^user_id and d.object_id == ^object_id)
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 
   # A hack because user delete activities have a fake id for whatever reason

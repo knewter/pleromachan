@@ -35,7 +35,7 @@ defmodule Pleroma.Workers.Cron.DigestEmailsWorker do
         where: u.last_digest_emailed_at < datetime_add(^now, ^negative_interval, "day"),
         select: u
       )
-      |> Repo.all()
+      |> Repo.replica().all()
       |> send_emails
     end
 

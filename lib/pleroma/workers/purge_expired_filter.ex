@@ -38,6 +38,6 @@ defmodule Pleroma.Workers.PurgeExpiredFilter do
       where: j.queue == "filter_expiration",
       where: fragment("?->'filter_id' = ?", j.args, ^id)
     )
-    |> Repo.one()
+    |> Repo.replica().one()
   end
 end

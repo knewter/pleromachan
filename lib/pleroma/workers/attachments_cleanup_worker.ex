@@ -104,6 +104,6 @@ defmodule Pleroma.Workers.AttachmentsCleanupWorker do
     )
     # The query above can be time consumptive on large instances until we
     # refactor how uploads are stored
-    |> Repo.all(timeout: :infinity)
+    |> Repo.replica().all(timeout: :infinity)
   end
 end

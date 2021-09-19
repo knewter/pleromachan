@@ -336,7 +336,7 @@ defmodule Pleroma.Web.MastodonAPI.StatusController do
       users =
         User
         |> Ecto.Query.where([u], u.ap_id in ^likes)
-        |> Repo.all()
+        |> Repo.replica().all()
         |> Enum.filter(&(not User.blocks?(user, &1)))
 
       conn
@@ -360,7 +360,7 @@ defmodule Pleroma.Web.MastodonAPI.StatusController do
         |> Ecto.Query.where([a], a.actor in ^announces)
         # this is to use the index
         |> Activity.Queries.by_object_id(ap_id)
-        |> Repo.all()
+        |> Repo.replica().all()
         |> Enum.filter(&Visibility.visible_for_user?(&1, user))
         |> Enum.map(& &1.actor)
         |> Enum.uniq()
@@ -368,7 +368,7 @@ defmodule Pleroma.Web.MastodonAPI.StatusController do
       users =
         User
         |> Ecto.Query.where([u], u.ap_id in ^announces)
-        |> Repo.all()
+        |> Repo.replica().all()
         |> Enum.filter(&(not User.blocks?(user, &1)))
 
       conn

@@ -24,7 +24,7 @@ defmodule Pleroma.Pagination do
   def fetch_paginated(query, params, type \\ :keyset, table_binding \\ nil)
 
   def fetch_paginated(query, %{total: true} = params, :keyset, table_binding) do
-    total = Repo.aggregate(query, :count, :id)
+    total = Repo.replica().aggregate(query, :count, :id)
 
     %{
       total: total,
@@ -37,7 +37,7 @@ defmodule Pleroma.Pagination do
 
     query
     |> paginate(options, :keyset, table_binding)
-    |> Repo.all()
+    |> Repo.replica().all()
     |> enforce_order(options)
   end
 
@@ -45,7 +45,7 @@ defmodule Pleroma.Pagination do
     total =
       query
       |> Ecto.Query.exclude(:left_join)
-      |> Repo.aggregate(:count, :id)
+      |> Repo.replica().aggregate(:count, :id)
 
     %{
       total: total,
@@ -58,7 +58,7 @@ defmodule Pleroma.Pagination do
 
     query
     |> paginate(options, :offset, table_binding)
-    |> Repo.all()
+    |> Repo.replica().all()
   end
 
   @spec paginate(Ecto.Query.t(), map(), type(), atom() | nil) :: [Ecto.Schema.t()]
