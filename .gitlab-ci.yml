@@ -4,19 +4,37 @@ stages:
   - build_release
   - push_release
 
-
 build_release:
   stage: build_release
-  dependencies: []
   variables:
     MIX_ENV: prod
     RELEASE_TAR: 1
-  script: 
+  script:
+    - apt-get -qq update
+    - apt-get install -y libmagic-dev
+    - apt-get install -y gcc g++ musl-dev make cmake
+
+    - rm -rf _build/*/lib/pleroma
+    - mix local.hex --force
+    - mix local.rebar --force
+    - mix deps.get
+    - mix release
+
+push_release:
+  stage: push_release
+  only:
+    - develop
+  dependencies:
+    - build_release
+  variables:
+    MIX_ENV: prod
+    RELEASE_TAR: 1
+  script:
     - apt-get -qq update
     - apt-get install -y libmagic-dev
     - apt-get install -y gcc g++ musl-dev make cmake
     - wget https://dl.min.io/client/mc/release/linux-amd64/mc
-    - chmod +x ./mc 
+    - chmod +x ./mc
 
     - rm -rf _build/*/lib/pleroma
     - mix local.hex --force
@@ -32,3 +50,4 @@ build_release:
     - ./mc alias set s3 https://s3.amazonaws.com ${AWS_ACCESS_KEY_ID} ${AWS_SECRET_ACCESS_KEY}
     - ./mc cp $RELEASE ${TARGET}
     - ./mc cp $RELEASE ${LATEST_TARGET}
+
