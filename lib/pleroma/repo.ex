@@ -9,7 +9,8 @@ defmodule Pleroma.Repo do
     migration_timestamps: [type: :naive_datetime_usec]
 
   @replicas [
-    Pleroma.Repo.Replica1
+    Pleroma.Repo.Replica1,
+    Pleroma.Repo.Replica2
   ]
 
   for repo <- @replicas do

@@ -89,6 +89,7 @@ defmodule Pleroma.Application do
         Pleroma.PromEx,
         Pleroma.Repo,
         Pleroma.Repo.Replica1,
+        Pleroma.Repo.Replica2,
         Config.TransferTask,
         Pleroma.Emoji,
         Pleroma.Web.Plugs.RateLimiter.Supervisor

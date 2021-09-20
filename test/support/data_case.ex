@@ -94,7 +94,8 @@ defmodule Pleroma.DataCase do
   end
 
   @replicas [
-    Pleroma.Repo.Replica1
+    Pleroma.Repo.Replica1,
+    Pleroma.Repo.Replica2
   ]
   def setup_replica_test_fixes do
     for replica <- @replicas do
