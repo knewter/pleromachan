@@ -42,7 +42,8 @@ config :pleroma, :activitypub, sign_object_fetches: false, follow_handshake_time
 
 replicas = [
   Pleroma.Repo,
-  Pleroma.Repo.Replica1
+  Pleroma.Repo.Replica1,
+  Pleroma.Repo.Replica2
 ]
 
 for repo <- replicas do

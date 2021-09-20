@@ -71,7 +71,8 @@ config :phoenix, :stacktrace_depth, 20
 
 replicas = [
   Pleroma.Repo,
-  Pleroma.Repo.Replica1
+  Pleroma.Repo.Replica1,
+  Pleroma.Repo.Replica2
 ]
 
 for repo <- replicas do
