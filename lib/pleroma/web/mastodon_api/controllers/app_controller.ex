@@ -36,7 +36,7 @@ defmodule Pleroma.Web.MastodonAPI.AppController do
 
     with cs <- App.register_changeset(%App{}, app_attrs),
          false <- cs.changes[:client_name] == @local_mastodon_name,
-         {:ok, app} <- Repo.insert(cs) do
+         {:ok, app} <- Repo.sync_insert(cs) do
       render(conn, "show.json", app: app)
     end
   end

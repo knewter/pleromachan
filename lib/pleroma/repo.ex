@@ -8,6 +8,8 @@ defmodule Pleroma.Repo do
     adapter: Ecto.Adapters.Postgres,
     migration_timestamps: [type: :naive_datetime_usec]
 
+  alias Ecto.Multi
+
   @replicas [
     Pleroma.Repo.Replica1,
     Pleroma.Repo.Replica2
@@ -119,5 +121,47 @@ defmodule Pleroma.Repo do
       end,
       fn _ -> :ok end
     )
+  end
+
+  def set_sync_session(repo) do
+    repo.query("SET synchronous_commit=remote_apply;")
+  end
+
+  @doc "insert the record and ensure that all replicated databased have applied this record"
+  def sync_insert(record, opts \\ []) do
+    Multi.new()
+    |> Multi.run(:transaction, fn repo, _ ->
+      set_sync_session(repo)
+    end)
+    |> Multi.insert(:record, record, opts)
+    |> transaction()
+    |> case do
+      {:ok, %{record: record}} -> {:ok, record}
+      {:error, _, changeset, _} -> {:error, changeset}
+    end
+  end
+
+  @doc "run the transaction and ensure that all replicated databased have applied the inserted/modified records"
+  def sync_transaction(multi_or_func, opts \\ [])
+
+  def sync_transaction(func, opts) when is_function(func, 0),
+    do: sync_transaction(fn _ -> func.() end, opts)
+
+  def sync_transaction(func, opts) when is_function(func, 1) do
+    func = fn repo ->
+      set_sync_session(repo)
+      func.(repo)
+    end
+
+    transaction(func, opts)
+  end
+
+  def sync_transaction(%Multi{} = multi, opts) do
+    multi =
+      Multi.new()
+      |> Multi.run(:__transaction, fn repo, _ -> set_sync_session(repo) end)
+      |> Multi.append(multi)
+
+    transaction(multi, opts)
   end
 end
