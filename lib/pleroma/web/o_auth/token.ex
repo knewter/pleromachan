@@ -117,7 +117,7 @@ defmodule Pleroma.Web.OAuth.Token do
     |> put_valid_until(attrs)
     |> put_token()
     |> put_refresh_token(attrs)
-    |> Repo.insert()
+    |> Repo.sync_insert()
   end
 
   def delete_user_tokens(%User{id: user_id}) do

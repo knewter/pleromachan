@@ -809,7 +809,7 @@ defmodule Pleroma.User do
 
   @doc "Inserts provided changeset, performs post-registration actions (confirmation email sending etc.)"
   def register(%Ecto.Changeset{} = changeset) do
-    with {:ok, user} <- Repo.insert(changeset) do
+    with {:ok, user} <- Repo.sync_insert(changeset) do
       post_register_action(user)
     end
   end
