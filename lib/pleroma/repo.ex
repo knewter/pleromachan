@@ -38,7 +38,7 @@ defmodule Pleroma.Repo do
   defmodule Instrumenter, do: use(Prometheus.EctoInstrumenter)
 
   def replica do
-    if in_transaction?, do: __MODULE__, else: Enum.random(@replicas)
+    if in_transaction?(), do: __MODULE__, else: Enum.random(@replicas)
   end
 
   @doc """
