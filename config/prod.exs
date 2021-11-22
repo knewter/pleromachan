@@ -34,6 +34,7 @@ config :pleroma, Pleroma.Repo, loggers: [{LoggerJSON.Ecto, :log, [:info]}]
 
 # Do not print debug messages in production
 config :logger, :console, level: :info
+config :logger, LoggerJSON, level: :info
 config :logger, :ex_syslogger, level: :info
 
 # ## SSL Support
