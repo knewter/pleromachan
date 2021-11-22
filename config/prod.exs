@@ -29,6 +29,9 @@ config :prometheus, Pleroma.Web.Endpoint.MetricsExporter,
   path: "/api/metrics",
   auth: false
 
+config :logger, backends: [LoggerJSON]
+config :pleroma, Pleroma.Repo, loggers: [{LoggerJSON.Ecto, :log, [:info]}]
+
 # Do not print debug messages in production
 config :logger, :console, level: :info
 config :logger, :ex_syslogger, level: :info

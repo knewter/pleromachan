@@ -215,6 +215,7 @@ defmodule Pleroma.Mixfile do
       {:sentry, "8.0.5"},
       {:appsignal, "~> 2.0"},
       {:appsignal_phoenix, "~> 2.0.0"},
+      {:logger_json, "~> 4.3.0"},
 
       # indirect dependency version override
       {:plug, "~> 1.10.4", override: true},

@@ -172,6 +172,14 @@ defmodule Pleroma.Application do
       Pleroma.Repo.Instrumenter.setup()
     end
 
+    :ok =
+      :telemetry.attach(
+        "logger-json-ecto",
+        [:pleroma, :repo, :query],
+        &LoggerJSON.Ecto.telemetry_logging_handler/4,
+        %{}
+      )
+
     Pleroma.Web.Endpoint.MetricsExporter.setup()
     Pleroma.Web.Endpoint.PipelineInstrumenter.setup()
 

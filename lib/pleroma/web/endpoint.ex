@@ -25,6 +25,8 @@ defmodule Pleroma.Web.Endpoint do
   plug(Pleroma.Web.Plugs.HTTPSecurityPlug)
   plug(Pleroma.Web.Plugs.UploadedMedia)
 
+  plug(LoggerJSON.Plug)
+
   @static_cache_control "public, no-cache"
 
   # InstanceStatic needs to be before Plug.Static to be able to override shipped-static files
